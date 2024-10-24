@@ -12,6 +12,12 @@ const config: Config = {
         background: "var(--background)",
         foreground: "var(--foreground)",
       },
+      fontFamily: {
+        interTight: ['"Inter Tight"', 'sans-serif'],
+        londrinaShadow: ['"Londrina Shadow"', 'cursive'],
+        londrinaSolid: ['"Londrina Solid"', 'sans-serif'],
+        pragatiNarrow: ['"Pragati Narrow"', 'sans-serif'],
+      }
     },
   },
   plugins: [],
