@@ -12,7 +12,7 @@ export const protect = async(req, res, next) => {
         req.user = decoded;
         next();
     } 
-    catch (error) {
+    catch (err) {
         console.error(err);
         res.status(401).json({ message: 'Invalid token' });    
     }

@@ -20,5 +20,15 @@ model Room {
   id String @id @default(uuid())
   name String
   userId String
+  checkIns CheckIn[]
   user User @relation(fields: [userId], references: [id])
+}
+
+model CheckIn {
+  id String @id @default(uuid())
+  date DateTime
+  roomId String
+  room Room @relation(fields: [roomId], references: [id])
+
+  @@unique([roomId,date])
 }
