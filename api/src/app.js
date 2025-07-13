@@ -4,6 +4,7 @@ import dotenv from 'dotenv';
 
 import authRoutes from './routes/authRoutes.js'
 import roomRoutes from './routes/roomRoutes.js'
+import checkinRoutes from './routes/checkinRoutes.js'
 
 dotenv.config();
 
@@ -17,6 +18,7 @@ app.get('/', (req, res) => {
 
 app.use('/api/auth', authRoutes);
 app.use('/api/room', roomRoutes);
+app.use('/api/checkin', checkinRoutes);
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
