@@ -50,19 +50,59 @@ export const login = async(req,res) => {
             return res.status(400).json({message:"Invalid Credentials"})
         }
 
-        const token = jwt.sign(
+        const access_token = jwt.sign(
             {userId:existingUser.id, username: existingUser.username},
             process.env.JWT_SECRET,
-            {expiresIn: "1d"}
+            {expiresIn: "15m"}
         )
 
+        const refresh_token = jwt.sign(
+            {userId:existingUser.id},
+            process.env.JWT_SECRET,
+            {expiresIn: "7d"}
+        )
+
+        res.cookie("refresh_token", refresh_token, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: "lax",
+            maxAge: 7 * 24 * 60 * 60 * 1000
+        })
+
         res.status(200).json({
-            token,
-            user: {id: existingUser.id, username: existingUser.username}
+            user: {id: existingUser.id, username: existingUser.username},
+            access_token
         })
     } 
     catch (err) {
         console.error(err);
+        res.status(500).json({ message: "Server error" });
+    }
+}
+
+export const refresh = async(req,res) => {
+    try {
+        const refresh_token = req.cookies.refresh_token;
+        if(!refresh_token){
+            return res.status(401).json({ message: "Refresh token not found. Please log in again." });
+        }
+
+        jwt.verify(refresh_token, process.env.JWT_SECRET, (err, decoded) => {
+            if(err){
+                console.error("Refresh token invalid:", err);
+                return res.status(401).json({ message: "Invalid or expired refresh token. Please log in again." });
+            }
+            const newAccessToken = jwt.sign(
+                {userId: decoded.userId},
+                process.env.JWT_SECRET,
+                {expiresIn: "15m"}
+            )
+
+            return res.json({access_token: newAccessToken});
+        })
+    }
+    catch (err) {
+        console.error("Error in refresh:", err);
         res.status(500).json({ message: "Server error" });
     }
 }
