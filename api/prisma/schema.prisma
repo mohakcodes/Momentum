@@ -19,16 +19,20 @@ model User {
 model Room {
   id String @id @default(uuid())
   name String
+  description String?
+  theme String @default("green-dark")
   userId String
   checkIns CheckIn[]
-  user User @relation(fields: [userId], references: [id])
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
 }
 
 model CheckIn {
   id String @id @default(uuid())
   date DateTime
   roomId String
-  room Room @relation(fields: [roomId], references: [id])
+  room Room @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
 
   @@unique([roomId,date])
 }
