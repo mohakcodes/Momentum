@@ -1,0 +1,10 @@
+@import url('https://fonts.googleapis.com/css2?family=Balsamiq+Sans&family=Londrina+Solid:wght@300;400&family=Open+Sans:wght@500&family=Poppins:wght@300;400;500&display=swap');
+
+@import "tailwindcss";
+
+@theme {
+  --font-balsamiq: "Balsamiq Sans", sans-serif;
+  --font-londrina: "Londrina Solid", sans-serif;
+  --font-poppins: "Poppins", sans-serif;
+  --font-opensans: "Open Sans", sans-serif;
+}
