@@ -6,7 +6,12 @@ export const getRoom = async(req,res) => {
     try {
         if(id){
             const room = await prisma.room.findFirst({
-                where:{id, userId}
+                where: {id, userId},
+                include: {
+                    checkIns: {
+                        orderBy: {date: 'desc'},
+                    }
+                }
             })
             if (!room) {
                 return res.status(404).json({ message: "Room Not Found" });
@@ -15,7 +20,17 @@ export const getRoom = async(req,res) => {
         }
         else{
             const rooms = await prisma.room.findMany({
-                where:{userId}
+                where: {userId},
+                orderBy: {createdAt: 'desc'},
+                include: {
+                    checkIns: {
+                        orderBy: {date: 'desc'},
+                        take: 1
+                    },
+                    _count: {
+                        select: {checkIns: true}
+                    }
+                }
             });
             return res.status(200).json({message:"Rooms Fetched", rooms})
         }
@@ -27,7 +42,7 @@ export const getRoom = async(req,res) => {
 }
 
 export const createRoom = async(req,res) => {
-    const { name } = req.body;
+    const { name, description, theme } = req.body;
     const userId = req.user.userId;
 
     try {
@@ -36,11 +51,33 @@ export const createRoom = async(req,res) => {
             return res.status(400).json({message:"Room with same name already exists"})
         }
 
-        const createdRoom = await prisma.room.create({data: {name,userId}})
+        const createdRoom = await prisma.room.create({data: {name,userId,description,theme}})
         return res.status(201).json({message:"Room Created", room: createdRoom})
     } 
     catch (err) {
         console.error(err);
         res.status(500).json({ message: "Server error" });
+    }
+}
+
+export const removeRoom = async(req,res) => {
+    const {id} = req.params;
+    const userId = req.user.userId;
+
+    try {
+        const room = await prisma.room.findFirst({
+            where: {id, userId}
+        })
+        if(!room){
+            return res.status(404).json({ message: "Room not found or access denied." });
+        }
+        await prisma.room.delete({
+            where: { id }
+        });
+        return res.status(200).json({ message: "Room deleted successfully." });
+    } 
+    catch (err) {
+        console.error(err);
+        res.status(500).json({ message: "Server error" });   
     }
 }
