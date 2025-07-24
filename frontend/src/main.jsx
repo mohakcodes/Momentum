@@ -13,6 +13,8 @@ import { Toaster } from 'react-hot-toast'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { BrowserRouter, Routes, Route } from 'react-router'
 
+import Layout from './components/Layout.jsx'
+
 const queryClient = new QueryClient();
 
 createRoot(document.getElementById('root')).render(
@@ -21,7 +23,7 @@ createRoot(document.getElementById('root')).render(
       <BrowserRouter>
         <Navbar/>
         <Toaster position="top-right" />
-        <div className='bg-green-100 min-h-screen pt-16 font-poppins'>
+        <Layout>
           <Routes>
             <Route path='/' element={<Home/>}/>
             <Route path='/auth' element={<Auth/>}/>
@@ -29,7 +31,7 @@ createRoot(document.getElementById('root')).render(
             <Route path='/room/:id' element={<HabitRoom/>}/>
             <Route path='*' element={<NotFound/>}/>
           </Routes>
-        </div>
+        </Layout>
       </BrowserRouter>
     </QueryClientProvider>
   </StrictMode>,

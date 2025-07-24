@@ -6,6 +6,7 @@ import { getYearRangeFromCheckIns } from '../../utils/checkInYearRange';
 import { findCurrMaxStreak } from '../../utils/streaks';
 
 import YearHeatMap from '../YearHeatMap';
+import useThemeStore from '../../store/useThemeStore';
 
 const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
@@ -71,6 +72,10 @@ const HabitRoom = () => {
   const checkIns = room?.checkIns || [];
   const { minYear, maxYear } = useMemo(() => getYearRangeFromCheckIns(checkIns), [checkIns]);
 
+  const { theme, themeConfig } = useThemeStore();
+  const currentTheme = themeConfig[theme];
+  const fontColor = currentTheme?.fontColor || 'text-gray-800';
+
   const streaks = useMemo(() => {
     return findCurrMaxStreak(checkIns,selectedYear);
   },[checkIns,selectedYear])
@@ -82,15 +87,16 @@ const HabitRoom = () => {
     <div className="max-w-4xl mx-auto px-6 py-10 space-y-10">
       <div className="flex flex-col sm:flex-row items-start justify-between gap-4 sm:gap-8">
         <div className='flex-1'>
-          <h1 className="text-2xl sm:text-3xl font-bold text-gray-800">{room.name}</h1>
-          <p className="text-gray-600 mt-1">{room.description || 'No description available.'}</p>
+          <h1 className={`text-2xl sm:text-3xl font-bold ${fontColor}`}>{room.name}</h1>
+          <p className={`${fontColor} mt-1`}>{room.description || 'No description available.'}</p>
         </div>
         <button
           onClick={handleCheckIn}
           disabled={isDisabled}
           className={`
-            px-4 sm:px-5 py-2 rounded-lg transition font-medium text-white self-stretch sm:self-auto
-            ${doneToday ? 'bg-gray-600 cursor-not-allowed' : 'bg-green-600 hover:bg-green-700'}
+            px-4 sm:px-5 py-2 rounded-lg transition font-medium self-stretch sm:self-auto
+            text-white disabled:cursor-not-allowed disabled:bg-gray-600
+            ${!doneToday ? currentTheme.button : ''}
           `}
         >
           {doneToday
@@ -104,36 +110,46 @@ const HabitRoom = () => {
       <div className="flex sm:flex-row flex-col justify-between sm:items-start items-center gap-4 sm:gap-0">
         <div className='flex items-center gap-3'>
           <div>
-            <label className="text-md font-medium text-gray-700">Year </label>
+            <label className={`text-md font-medium ${fontColor}`}>Year </label>
             <select
               value={selectedYear}
               onChange={(e) => setSelectedYear(parseInt(e.target.value))}
-              className="border border-gray-300 rounded px-3 py-1"
+              className={`border border-gray-300 rounded px-3 py-1 ${fontColor} ${currentTheme.pageBg}`}
             >
               {Array.from({ length: maxYear - minYear + 1 }, (_, i) => minYear + i).map((year) => (
-                <option key={year} value={year}>
+               <option
+                  key={year}
+                  value={year}
+                  className={`${currentTheme.pageBg} ${fontColor}`}
+                >
                   {year}
                 </option>
               ))}
             </select>
           </div>
           <div>
-            <label className="text-md font-medium text-gray-700">Month </label>
+            <label className={`text-md font-medium ${fontColor}`}>Month </label>
             <select
               value={selectedMonth}
               onChange={(e) => setSelectedMonth(parseInt(e.target.value))}
-              className="border border-gray-300 rounded px-3 py-1"
+              className={`border border-gray-300 rounded px-3 py-1 ${fontColor} ${currentTheme.pageBg}`}
             >
               <option value={-1}>All</option>
               {
-                months.map((m,i) => (
-                  <option key={i} value={i} className='min-w-2xl'>{m}</option>
+                months.map((m, i) => (
+                  <option 
+                    key={i} 
+                    value={i} 
+                    className={`${currentTheme.pageBg} ${fontColor}`}
+                  >
+                    {m}
+                  </option>
                 ))
               }
             </select>
           </div>
         </div>
-        <div className="flex flex-col gap-1 text-md text-gray-700">
+        <div className={`flex flex-col gap-1 text-md ${fontColor}`}>
           <p>
             Max streak: <strong>{streaks.maxStreak}</strong> days
           </p>
@@ -144,7 +160,15 @@ const HabitRoom = () => {
         </div>
       </div>  
 
-      <YearHeatMap year={selectedYear} month={selectedMonth} checkIns={checkIns} />
+      <YearHeatMap
+        year={selectedYear} 
+        month={selectedMonth} 
+        checkIns={checkIns}
+        checkInBoxClass={currentTheme.checkInBox}
+        checkInBoxHoverClass={currentTheme.checkInBoxHover}
+        checkInBoxBorderClass={currentTheme.checkInBoxBorder}
+        nonCheckInBoxClass={currentTheme.nonCheckInBox}
+      />
     </div>
   );
 };

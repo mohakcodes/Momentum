@@ -3,7 +3,7 @@ import { getCheckInDateSet } from '../utils/checkInDates';
 
 const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
-const YearHeatMap = ({ year, month, checkIns }) => {
+const YearHeatMap = ({ year, month, checkIns, checkInBoxClass, nonCheckInBoxClass, checkInBoxHoverClass, checkInBoxBorderClass }) => {
   const checkInSet = getCheckInDateSet(checkIns);
 
   const visibleMonths = month === -1 ? months.map((_, i) => i) : [month];
@@ -36,8 +36,8 @@ const YearHeatMap = ({ year, month, checkIns }) => {
                     className={`
                       aspect-square min-w-0 rounded-sm w-full
                       ${checkedIn 
-                        ? 'bg-green-500 hover:bg-green-600 hover:scale-[1.05] border border-green-700 shadow-sm' 
-                        : 'bg-slate-700'}
+                      ? `${checkInBoxClass} ${checkInBoxHoverClass} ${checkInBoxBorderClass} hover:scale-[1.05] shadow-sm` 
+                      : nonCheckInBoxClass}
                     `}
                   />
                 );
