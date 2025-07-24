@@ -6,7 +6,7 @@ const RoomForm = ({ onClose }) => {
   const [form, setForm] = useState({
     name: '',
     description: '',
-    theme: 'green-dark',
+    theme: 'fresh-forest',
   })
 
   const modalRef = useRef()
@@ -89,9 +89,14 @@ const RoomForm = ({ onClose }) => {
               onChange={handleChange}
               className="block w-full border bg-gray-100 border-gray-300 rounded px-3 py-2"
             >
-              <option value="green-dark">Green (Dark Mode)</option>
-              <option value="green-light">Green (Light Mode)</option>
-              <option value="yellow-dark">Yellow (Dark Mode)</option>
+                <option value="fresh-forest"> Fresh Forest </option>
+                <option value="mustard-dusk"> Mustard Dusk </option>
+                <option value="citrus-sky"> Citrus Sky </option>
+                <option value="rose-night"> Rose Night </option>
+                <option value="sky-violet"> Sky Violet </option>
+                <option value="aqua-mint"> Aqua Mint </option>
+                <option value="midnight-purple"> Midnight Purple </option>
+                <option value="peachy-sunset"> Peachy Sunset </option>
             </select>
           </div>
 
