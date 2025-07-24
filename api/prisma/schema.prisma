@@ -12,6 +12,8 @@ model User {
   id String @id @default(uuid())
   username String @unique
   password String
+  xp Int @default(20)
+  themes String[] @default([])
   rooms Room[]
   createdAt DateTime @default(now())
 }
@@ -20,7 +22,7 @@ model Room {
   id String @id @default(uuid())
   name String
   description String?
-  theme String @default("green-dark")
+  theme String @default("fresh-forest")
   userId String
   checkIns CheckIn[]
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)

@@ -1,0 +1,3 @@
+-- AlterTable
+ALTER TABLE "User" ADD COLUMN     "themes" TEXT[] DEFAULT ARRAY[]::TEXT[],
+ADD COLUMN     "xp" INTEGER NOT NULL DEFAULT 20;
