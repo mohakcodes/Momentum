@@ -1,5 +1,5 @@
 import api from '../../utils/axios';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useParams } from 'react-router';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { getYearRangeFromCheckIns } from '../../utils/checkInYearRange';
@@ -36,6 +36,10 @@ const HabitRoom = () => {
   const { id } = useParams();
   const queryClient = useQueryClient();
 
+  const { theme, themeConfig, setTheme } = useThemeStore();
+  const currentTheme = themeConfig[theme]
+  const fontColor = currentTheme?.fontColor || 'text-gray-800';
+  
   const { data: room, isLoading, isError } = useQuery({
     queryKey: ['room', id],
     queryFn: () => getRoomById(id),
@@ -72,13 +76,15 @@ const HabitRoom = () => {
   const checkIns = room?.checkIns || [];
   const { minYear, maxYear } = useMemo(() => getYearRangeFromCheckIns(checkIns), [checkIns]);
 
-  const { theme, themeConfig } = useThemeStore();
-  const currentTheme = themeConfig[theme];
-  const fontColor = currentTheme?.fontColor || 'text-gray-800';
-
   const streaks = useMemo(() => {
     return findCurrMaxStreak(checkIns,selectedYear);
   },[checkIns,selectedYear])
+
+  useEffect(() => {
+    if (room?.theme && room.theme !== theme) {
+      setTheme(room.theme);
+    }
+  }, [room?.theme, theme, setTheme]);
 
   if (isLoading || isCheckingToday) return <div className="text-center mt-16 text-gray-500">Loading room...</div>;
   if (isError) return <div className="text-center mt-16 text-red-500">Something went wrong loading the room.</div>;

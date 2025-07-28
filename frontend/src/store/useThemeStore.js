@@ -92,9 +92,9 @@ const themeConfig = {
 }
 
 const useThemeStore = create((set) => ({
-  theme: 'citrus-sky',
+  theme: 'fresh-forest',
   themeConfig,
   setTheme: (theme) => set({ theme }),
-}))
+}));
 
-export default useThemeStore
+export default useThemeStore;
