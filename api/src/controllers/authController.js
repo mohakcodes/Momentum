@@ -26,7 +26,7 @@ export const register = async(req,res) => {
 
         res.status(201).json({
             message: "User Registered",
-            user: {id: user.id, username: user.username}
+            user: {id: user.id, username: user.username, xp: user.xp, themes: user.themes}
         })
     } 
     catch (err) {
@@ -70,7 +70,12 @@ export const login = async(req,res) => {
         })
 
         res.status(200).json({
-            user: {id: existingUser.id, username: existingUser.username},
+            user: {
+                id: existingUser.id, 
+                username: existingUser.username,
+                xp: existingUser.xp,
+                themes: existingUser.themes
+            },
             access_token
         })
     } 
@@ -106,3 +111,19 @@ export const refresh = async(req,res) => {
         res.status(500).json({ message: "Server error" });
     }
 }
+
+export const logout = (req, res) => {
+  try {
+    res.clearCookie('refresh_token', {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax'
+    });
+
+    return res.status(200).json({ message: 'Logout successful' });
+  } 
+  catch (err) {
+    console.error("Error during logout:", err);
+    return res.status(500).json({ message: 'Server error during logout' });
+  }
+};
