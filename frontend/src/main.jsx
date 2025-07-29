@@ -22,7 +22,7 @@ createRoot(document.getElementById('root')).render(
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
         <Navbar/>
-        <Toaster position="top-right" />
+        <Toaster position="top-center" />
         <Layout>
           <Routes>
             <Route path='/' element={<Home/>}/>

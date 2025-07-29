@@ -3,10 +3,11 @@ import { useEffect, useMemo, useState } from 'react';
 import { useParams } from 'react-router';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { getYearRangeFromCheckIns } from '../../utils/checkInYearRange';
-import { findCurrMaxStreak } from '../../utils/streaks';
+import toast from 'react-hot-toast';
 
 import YearHeatMap from '../YearHeatMap';
 import useThemeStore from '../../store/useThemeStore';
+import useUserStore from '../../store/useUserStore';
 
 const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
@@ -25,20 +26,33 @@ const checkIfDoneToday = async (id) => {
 };
 
 const checkInNow = async (id) => {
-  const date = new Date();
-  date.setHours(0, 0, 0, 0);
-  const utcDate = date.toISOString();
-  const res = await api.post(`/checkin/check/${id}?date=${utcDate}`);
-  console.log(res);
+  const now = new Date();
+  const utcDate = now.toISOString();
+  const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+
+  const res = await api.post(`/checkin/check/${id}`,{
+    date: utcDate,
+    timeZone,
+  });
+  return res.data.updatedUser;
 };
+
+const getRoomStreaks = async(id, year) => {
+  const res = await api.get(`/room/streaks/${id}/year=${year}`);
+  return res.data;
+}
 
 const HabitRoom = () => {
   const { id } = useParams();
   const queryClient = useQueryClient();
 
+  const { setUser } = useUserStore();
   const { theme, themeConfig, setTheme } = useThemeStore();
   const currentTheme = themeConfig[theme]
   const fontColor = currentTheme?.fontColor || 'text-gray-800';
+  
+  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
+  const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth());
   
   const { data: room, isLoading, isError } = useQuery({
     queryKey: ['room', id],
@@ -46,6 +60,9 @@ const HabitRoom = () => {
     enabled: !!id,
   });
 
+  const checkIns = room?.checkIns || [];
+  const { minYear, maxYear } = useMemo(() => getYearRangeFromCheckIns(checkIns), [checkIns]);
+  
   const { data: doneToday, isLoading: isCheckingToday } = useQuery({
     queryKey: ['checkInStatus', id],
     queryFn: () => checkIfDoneToday(id),
@@ -54,9 +71,12 @@ const HabitRoom = () => {
 
   const checkInMutation = useMutation({
     mutationFn: () => checkInNow(id),
-    onSuccess: () => {
+    onSuccess: (updatedUser) => {
+      setUser(updatedUser);
+      toast.success('Checked in successfully! ✅');
       queryClient.invalidateQueries({ queryKey: ['room', id] });
       queryClient.invalidateQueries({ queryKey: ['checkInStatus', id] });
+      queryClient.invalidateQueries({ queryKey: ['streaks', id, selectedYear] });
     },
     onError: (err) => {
       const msg = err.response?.data?.message || 'Failed to check-in';
@@ -65,20 +85,15 @@ const HabitRoom = () => {
     },
   });
 
+  const {data: streaks = {currStreak: 0,maxStreak: 0}} = useQuery({
+    queryKey: ['streaks', id, selectedYear],
+    queryFn: getRoomStreaks(id, selectedYear),
+    enabled: !!id && !!selectedYear
+  })
+
   const handleCheckIn = () => {
     if (!doneToday) checkInMutation.mutate();
   };
-
-  const isDisabled = checkInMutation.isPending || doneToday;
-  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
-  const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth());
-
-  const checkIns = room?.checkIns || [];
-  const { minYear, maxYear } = useMemo(() => getYearRangeFromCheckIns(checkIns), [checkIns]);
-
-  const streaks = useMemo(() => {
-    return findCurrMaxStreak(checkIns,selectedYear);
-  },[checkIns,selectedYear])
 
   useEffect(() => {
     if (room?.theme && room.theme !== theme) {
@@ -98,7 +113,7 @@ const HabitRoom = () => {
         </div>
         <button
           onClick={handleCheckIn}
-          disabled={isDisabled}
+          disabled={checkInMutation.isPending || doneToday}
           className={`
             px-4 sm:px-5 py-2 rounded-lg transition font-medium self-stretch sm:self-auto
             text-white disabled:cursor-not-allowed disabled:bg-gray-600
