@@ -1,4 +1,7 @@
 import prisma from "../utils/prismaClient.js";
+import { DateTime } from "luxon";
+import { findCurrMaxStreak } from "../utils/streaks.js";
+import { getCoinReward } from '../utils/reward.js'
 
 export const isCheckInDoneToday = async(req,res) => {
     const {roomId} = req.params;
@@ -29,29 +32,52 @@ export const isCheckInDoneToday = async(req,res) => {
 
 export const checkInNow = async(req,res) => {
     const {roomId} = req.params;
-    const {date} = req.query;
+    const {date, timeZone} = req.body;
+    const userId = req.user.userId;
+
+    if(!roomId || !date || !timeZone){
+        return res.status(400).json({error:"RoomId ,Date & TimeZone are required"})
+    }
     
     try {
-        if(!roomId || !date){
-            return res.status(400).json({error:"RoomId & Date are required"})
-        }
-        
-        const dayToUse = new Date(date);
-        
+        const localDate = DateTime.fromISO(date, {zone: timeZone}).toISODate();
+        const midNightInUTC = DateTime.fromISO(localDate, {zone: timeZone}).toUTC().toJSDate();
+        const userYear = DateTime.fromISO(date, {zone: timeZone}).year;
+
         const checkIn = await prisma.checkIn.upsert({
             where:{
                 roomId_date:{
                     roomId,
-                    date:dayToUse
+                    date:midNightInUTC
                 }
             },
             update:{},
             create:{
                 roomId,
-                date: dayToUse
+                date: midNightInUTC
             }
         })
-        return res.json({ doneToday: true, checkIn });
+
+        const checkIns = await prisma.checkIn.findMany({
+            where: {roomId},
+        })
+
+        const {currStreak, maxStreak} = findCurrMaxStreak(checkIns, userYear);
+        const xpReward = getCoinReward(currStreak);
+
+        await prisma.user.update({
+            where: {id: userId},
+            data: {
+                xp: {increment: xpReward}
+            }
+        })
+
+        const updatedUser = await prisma.user.findUnique({
+            where: {id: userId},
+            select: { id: true, username: true, xp: true, themes: true}
+        })
+
+        return res.json({ doneToday: true, checkIn, currStreak, xpReward, updatedUser });
     } 
     catch (err) {
         console.error("Error in checkInNow:", err);

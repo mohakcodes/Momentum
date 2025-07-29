@@ -19,6 +19,7 @@
     "dotenv": "^17.2.0",
     "express": "^5.1.0",
     "jsonwebtoken": "^9.0.2",
+    "luxon": "^3.7.1",
     "prisma": "^6.11.1"
   },
   "devDependencies": {

@@ -1,4 +1,5 @@
 import prisma from '../utils/prismaClient.js'
+import { findCurrMaxStreak } from '../utils/streaks.js';
 
 export const getRoom = async(req,res) => {
     const {id} = req.params;
@@ -38,6 +39,33 @@ export const getRoom = async(req,res) => {
     catch (err) {
         console.error(err);
         res.status(500).json({ message: "Server error" });
+    }
+}
+
+export const getRoomStreaks = async(req,res) => {
+    const {id} = req.params;
+    const targetYear = parseInt(req.query.year) || new Date().getFullYear();
+
+    if (!id) {
+        return res.status(400).json({ message: "Room ID is required." });
+    }
+
+    try {
+        const room = await prisma.room.findUnique({
+            where: {id: id},
+            include: {
+                checkIns: {
+                    orderBy: {date: 'desc'}
+                }
+            }
+        })
+        
+        const streaks = findCurrMaxStreak(room.checkIns, targetYear);
+        return res.status(200).json(streaks);
+    } 
+    catch (err) {
+        console.error("Error getting room streaks:", err);
+        return res.status(500).json({ message: "Failed to get streaks." });
     }
 }
 
