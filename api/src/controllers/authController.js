@@ -21,12 +21,24 @@ export const register = async(req,res) => {
 
         const hashPass = await bcrypt.hash(password,10);
         const user = await prisma.user.create({
-            data: {username, password: hashPass}
+            data: {
+                username, 
+                password: hashPass,
+                unlockedToasts: ['default'],
+                selectedToast: 'default',
+            }
         })
 
         res.status(201).json({
             message: "User Registered",
-            user: {id: user.id, username: user.username, xp: user.xp, themes: user.themes}
+            user: {
+                id: user.id,
+                username: user.username,
+                xp: user.xp,
+                themes: user.themes,
+                unlockedToasts: user.unlockedToasts,
+                selectedToast: user.selectedToast
+            }
         })
     } 
     catch (err) {
@@ -74,7 +86,9 @@ export const login = async(req,res) => {
                 id: existingUser.id, 
                 username: existingUser.username,
                 xp: existingUser.xp,
-                themes: existingUser.themes
+                themes: existingUser.themes,
+                unlockedToasts: existingUser.unlockedToasts,
+                selectedToast: existingUser.selectedToast,
             },
             access_token
         })

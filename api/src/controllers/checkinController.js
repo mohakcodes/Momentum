@@ -74,7 +74,14 @@ export const checkInNow = async(req,res) => {
 
         const updatedUser = await prisma.user.findUnique({
             where: {id: userId},
-            select: { id: true, username: true, xp: true, themes: true}
+            select: {
+                id: true,
+                username: true,
+                xp: true,
+                themes: true,
+                unlockedToasts: true,
+                selectedToast: true
+            }
         })
 
         return res.json({ doneToday: true, checkIn, currStreak, xpReward, updatedUser });
