@@ -53,6 +53,7 @@ const Navbar = () => {
             user ? (
               <>
                 <li><Link to="/rooms" className="hover:underline">Rooms</Link></li>
+                <li><Link to="/store" className="hover:underline">Store</Link></li>
                 <li className="flex items-center gap-1">
                   <Link to="/profile" className="hover:underline">Profile</Link>
                   {user?.xp !== undefined && (
@@ -96,6 +97,7 @@ const Navbar = () => {
                 user ? (
                   <>
                     <Link to="/rooms" onClick={toggleMenu} className="px-4 py-2 hover:bg-slate-800 rounded-md">Rooms</Link>
+                    <Link to="/store" onClick={toggleMenu} className="px-4 py-2 hover:bg-slate-800 rounded-md">Store</Link>
                     <Link to="/profile" onClick={toggleMenu} className="px-4 py-2 hover:bg-slate-800 rounded-md">Profile</Link>
                     {user && (
                       <div className="px-4 text-md font-semibold py-2 text-green-300 border-b border-slate-600">
