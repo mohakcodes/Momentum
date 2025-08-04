@@ -4,6 +4,7 @@ import { useParams } from 'react-router';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { getYearRangeFromCheckIns } from '../../utils/checkInYearRange';
 import toast from 'react-hot-toast';
+import { toastStyles } from '../../constants/toastStyles';
 
 import YearHeatMap from '../YearHeatMap';
 import useThemeStore from '../../store/useThemeStore';
@@ -38,7 +39,7 @@ const checkInNow = async (id) => {
 };
 
 const getRoomStreaks = async(id, year) => {
-  const res = await api.get(`/room/streaks/${id}/year=${year}`);
+  const res = await api.get(`/room/streaks/${id}?year=${year}`);
   return res.data;
 }
 
@@ -46,7 +47,7 @@ const HabitRoom = () => {
   const { id } = useParams();
   const queryClient = useQueryClient();
 
-  const { setUser } = useUserStore();
+  const { user, setUser } = useUserStore();
   const { theme, themeConfig, setTheme } = useThemeStore();
   const currentTheme = themeConfig[theme]
   const fontColor = currentTheme?.fontColor || 'text-gray-800';
@@ -73,7 +74,30 @@ const HabitRoom = () => {
     mutationFn: () => checkInNow(id),
     onSuccess: (updatedUser) => {
       setUser(updatedUser);
-      toast.success('Checked in successfully! ✅');
+
+      const toastId = updatedUser.selectedToast || 'default';
+      const selectedToast = toastStyles.find(t => t.id === toastId) || toastStyles[0];
+
+      toast.custom((t) => {
+        const Icon = selectedToast.icon;
+        const style = selectedToast.style;
+
+        return (
+          <div
+            className={`max-w-[300px] px-4 py-3 rounded-xl shadow-md border
+              flex items-center gap-3 transition-opacity duration-300
+              ${style.bgColor} ${t.visible ? 'opacity-100' : 'opacity-0'}`}
+          >
+            <div className={`p-2 rounded-full ${style.iconBg}`}>
+              <Icon className={`${style.iconColor}`} size={24} strokeWidth={2.2} />
+            </div>
+            <span className={`text-[16px] font-medium ${style.textColor}`}>
+              {selectedToast.message}
+            </span>
+          </div>
+        );
+      });
+
       queryClient.invalidateQueries({ queryKey: ['room', id] });
       queryClient.invalidateQueries({ queryKey: ['checkInStatus', id] });
       queryClient.invalidateQueries({ queryKey: ['streaks', id, selectedYear] });
@@ -87,7 +111,7 @@ const HabitRoom = () => {
 
   const {data: streaks = {currStreak: 0,maxStreak: 0}} = useQuery({
     queryKey: ['streaks', id, selectedYear],
-    queryFn: getRoomStreaks(id, selectedYear),
+    queryFn: () => getRoomStreaks(id, selectedYear),
     enabled: !!id && !!selectedYear
   })
 
