@@ -14,6 +14,8 @@ model User {
   password String
   xp Int @default(20)
   themes String[] @default([])
+  unlockedToasts String[] @default(["default"])
+  selectedToast String @default("default")
   rooms Room[]
   createdAt DateTime @default(now())
 }
